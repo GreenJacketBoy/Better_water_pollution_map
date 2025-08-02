@@ -103,8 +103,18 @@ export class MapService {
         source: 'points',
         filter: ['!', ['has', 'point_count']], // this ensures clusters are not added in this layer
         paint: {
-          'circle-color': 'blue',
-          'circle-radius': 5,
+          'circle-color': 'black',
+          'circle-opacity': 0.5,
+          'circle-radius': 4,
+          "circle-stroke-width" : 2,
+          'circle-stroke-color': [
+            'case',
+            ['==', ['get', 'type_surveillance'], 'Surveillance eaux souterraines'], '#0000d6',
+            ['==', ['get', 'type_surveillance'], 'Surveillance eaux superficielles'], '#79a6ea',
+            ['==', ['get', 'type_surveillance'], 'Surveillance eau distribuée'], '#82d9d9',
+            ['==', ['get', 'type_surveillance'], 'industrielle'], '#d982d9',
+            'white',
+          ]
         },
       });
 
@@ -156,6 +166,9 @@ export class MapService {
           }
         )
         
+        feature.properties.analyses_quantifiees = undefined; // storing this would only uselessly take more RAM
+        // maplibre doesn't have a contains operator for paint style, so changing it here.
+        feature.properties.type_surveillance = (feature.properties.type_surveillance as string).includes('Surveillance industrielle', 0) ? 'industrielle' : feature.properties.type_surveillance;
         feature.id = feature.properties.identifiant_point;
         return feature;
       })
@@ -164,7 +177,7 @@ export class MapService {
       
       source?.updateData({
         add: features,
-      });      
+      });         
     });
     
   }
