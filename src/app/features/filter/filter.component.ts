@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal, Signal } from '@angular/core';
 import { FilterService } from '../../services/filter.service';
 
 @Component({
@@ -10,6 +10,13 @@ import { FilterService } from '../../services/filter.service';
 
 export class FilterComponent {
 
+  surveillanceTypes: Signal<Array<string>> = signal([]);
+
   constructor(private filterService: FilterService) {
+    this.surveillanceTypes = filterService.surveillanceTypes;
+  }
+
+  toggleTypeFilter(type: string) {
+    this.filterService.toggleTypeFilter(type);
   }
 }

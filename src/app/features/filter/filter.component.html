@@ -1,1 +1,11 @@
-<p>filter works!</p>
+<h3>Filtres :</h3>
+
+<p>Type : </p>
+<ul class="checkboxes">
+  @for (type of this.surveillanceTypes(); track $index) {
+    <li> 
+      <input type="checkbox" id="{{ type }}" (change)="toggleTypeFilter(type)" checked>
+      <label for="{{ type }}"> {{ type }}</label>
+    </li>
+  }
+</ul>

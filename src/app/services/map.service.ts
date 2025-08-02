@@ -122,6 +122,9 @@ export class MapService {
   >
   ) {
 
+    if (!this.map)
+      return;
+
     const features: Array<GeoJSON.Feature> = [];
 
     idInfosMap.forEach((data, pointId) => {

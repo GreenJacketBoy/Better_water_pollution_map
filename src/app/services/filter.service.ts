@@ -1,5 +1,4 @@
-import { effect, Injectable } from "@angular/core";
-import { GeoJSONSource } from "maplibre-gl";
+import { computed, effect, Injectable, signal, WritableSignal } from "@angular/core";
 import { MapService } from "./map.service";
 
 @Injectable({
@@ -14,7 +13,7 @@ export class FilterService {
     'https://mapsref.brgm.fr/wxs/pfas/pfas?&service=WFS&request=GetFeature&version=2.0.0&typename=POINTS_OSOUT&outputFormat=application/json',
   ];
   
-  idInfosMap: Map<
+  private idInfosMap: Map<
     string,
     {
       type: string,
@@ -29,6 +28,14 @@ export class FilterService {
     }
   > = new Map();
 
+  private _survaillanceTypes: WritableSignal<Set<string>> = signal(new Set());
+
+  displayedIdInfosMap = signal(this.idInfosMap);
+
+  surveillanceTypes = computed(() => {    
+    return Array.from(this._survaillanceTypes()).sort();
+  })
+
   constructor(private mapService: MapService) {
 
     effect(() => {
@@ -39,6 +46,33 @@ export class FilterService {
         this.dataGatherAndDisplay(url)
       );
     })
+
+    effect(() =>
+      this.mapService.updateFromData(this.displayedIdInfosMap())
+    );
+  }
+
+  toggleTypeFilter(type: string) {
+
+    const newMap: typeof this.idInfosMap = new Map();
+    let containsThisType = false;
+
+    this.displayedIdInfosMap().forEach((value, key) => {
+      if (value.type === type)
+        containsThisType = true;
+      else
+        newMap.set(key, value);
+    });
+
+    if (!containsThisType) {
+      this.idInfosMap.forEach((value, key) => {
+        if (value.type === type)
+          newMap.set(key, value);
+      }
+      );
+    }
+
+    this.displayedIdInfosMap.set(newMap);
   }
 
   dataGatherAndDisplay(dataUrl: string) {
@@ -53,6 +87,12 @@ export class FilterService {
       
       features.map((feature) => {
 
+        this._survaillanceTypes.update((set) => {
+          const newSet = new Set(set);
+          newSet.add(feature.properties.type_surveillance);          
+          return newSet;
+        });        
+        
         const analysis = (feature.properties.analyses_quantifiees as string);
 
         this.idInfosMap.set(
@@ -87,7 +127,10 @@ export class FilterService {
         return feature;
       })
 
-      this.mapService.updateFromData(this.idInfosMap);      
+      const idInfosMapCopy = new Map();
+      this.idInfosMap.forEach((value, key) => idInfosMapCopy.set(key, value));
+
+      this.displayedIdInfosMap.set(idInfosMapCopy);
     });
   }
 
