@@ -1,32 +1,15 @@
-import { ElementRef, Injectable } from "@angular/core";
-import { GeoJSONSource, Map as maplibreMap } from 'maplibre-gl';
+import { computed, ElementRef, Injectable, signal } from "@angular/core";
+import { Feature, GeoJSONSource, Map as maplibreMap } from 'maplibre-gl';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MapService {
 
-  map!: maplibreMap;
-  idInfosMap: Map<
-    string,
-    {
-      type: string,
-      measures: Array<[Date, string, number]>,
-      startDate: Date,
-      endDate: Date,
-      coordinates: [number, number],
-      analysisAmount: number,
-      quantifiedAnalysisAmount: number,
-      place: string,
-    }
-  > = new Map();
+  private _mapIsReady = signal(false);
 
-  private dataUrls = [
-    'https://mapsref.brgm.fr/wxs/pfas/pfas?&service=WFS&request=GetFeature&version=2.0.0&typename=POINTS_ICPE&outputFormat=application/json',
-    'https://mapsref.brgm.fr/wxs/pfas/pfas?&service=WFS&request=GetFeature&version=2.0.0&typename=POINTS_EAU_DISTRIBUEE&outputFormat=application/json',
-    'https://mapsref.brgm.fr/wxs/pfas/pfas?&service=WFS&request=GetFeature&version=2.0.0&typename=POINTS_OSUP&outputFormat=application/json',
-    'https://mapsref.brgm.fr/wxs/pfas/pfas?&service=WFS&request=GetFeature&version=2.0.0&typename=POINTS_OSOUT&outputFormat=application/json',
-  ];
+  mapIsReady = computed(() => this._mapIsReady());
+  map!: maplibreMap;
 
   constructor() {
   }
@@ -118,72 +101,52 @@ export class MapService {
         },
       });
 
-      this.dataUrls.forEach((url) => 
-        this.dataGatherAndDisplay(url)
-      );
+      this._mapIsReady.set(true);
     })
   }
 
-  dataGatherAndDisplay(dataUrl: string) {
-    
-    fetch(dataUrl)
-    .then((response) => response.json())
-    .then((json) => {
-      
-      console.log('ding !');
+  updateFromData(
+    idInfosMap: Map<
+    string,
+    {
+      type: string,
+      measures: Array<[Date, string, number]>,
+      startDate: Date,
+      endDate: Date,
+      coordinates: [number, number],
+      analysisAmount: number,
+      quantifiedAnalysisAmount: number,
+      amountPfasSearches: number,
+      place: string,
+    }
+  >
+  ) {
 
-      const features: any[] = json.features;
-      
-      features.map((feature) => {
+    const features: Array<GeoJSON.Feature> = [];
 
-        const analysis = (feature.properties.analyses_quantifiees as string);
+    idInfosMap.forEach((data, pointId) => {
+      const { type, coordinates } = data;
 
-        this.idInfosMap.set(
-          feature.properties.identifiant_point,
-          {
-            type: feature.properties.type_surveillance,
-            // all of the following makes sense if you look at how the data is structured
-            measures: analysis === '' ? [] : 
-            analysis
-            .split('<br>')
-            .map((data) => {
-              
-              const [dateString, right] = data.split(' - ');
+      const feature: GeoJSON.Feature = { 
+        type: 'Feature',
+        id: pointId,
+        properties: {
+          // Maplibre doesn't have a 'contains' operator for string in its paint style expressions, so changing it here
+          "type_surveillance": type.includes('Surveillance industrielle', 0) ? 'industrielle' : type,
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: coordinates,
+        }
+      }
 
-              const date = this.stringToDate(dateString);
-
-              const [toxinName, right2_YeahIKnowIKnowStopJudgingMe] = right.split(' : ');
-              const [amount] = right2_YeahIKnowIKnowStopJudgingMe.split(' µg')
-
-              return [date, toxinName, +amount];
-            }),
-            startDate: this.stringToDate(feature.properties.date_debut_analyse),
-            endDate: this.stringToDate(feature.properties.date_fin_analyse),
-            coordinates: feature.geometry.coordinates,
-            analysisAmount: +feature.properties.nb_analyses,
-            quantifiedAnalysisAmount: +feature.properties.nb_analyses_quantifiees,
-            place: feature.properties.commune,
-          }
-        )
-        
-        feature.properties.analyses_quantifiees = undefined; // storing this would only uselessly take more RAM
-        // maplibre doesn't have a contains operator for paint style, so changing it here.
-        feature.properties.type_surveillance = (feature.properties.type_surveillance as string).includes('Surveillance industrielle', 0) ? 'industrielle' : feature.properties.type_surveillance;
-        feature.id = feature.properties.identifiant_point;
-        return feature;
-      })
-
-      const source: GeoJSONSource | undefined = this.map?.getSource('points');
-      
-      source?.updateData({
-        add: features,
-      });         
+      features.push(feature);
     });
     
-  }
-
-  stringToDate(dateString: string) {
-    const [day, month, year] = dateString.split('\/');
-    return new Date(+year, +month, +day);
+    (this.map.getSource('points') as GeoJSONSource)
+    .updateData({
+      add: features,
+      removeAll: true,
+    }); 
   }
 }
