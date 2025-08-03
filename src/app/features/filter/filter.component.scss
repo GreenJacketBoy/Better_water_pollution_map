@@ -1,4 +1,18 @@
 :host {
   min-width: max-content;
 
+  .hidden {
+    display: none;
+  }
+
+  .suggestions {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .commune {
+    min-width: 100%;
+    border: 1px solid black;
+    padding: 2px
+  }
 }

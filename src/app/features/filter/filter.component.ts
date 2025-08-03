@@ -1,4 +1,4 @@
-import { Component, signal, Signal } from '@angular/core';
+import { Component, signal, Signal, WritableSignal } from '@angular/core';
 import { FilterService } from '../../services/filter.service';
 
 @Component({
@@ -12,10 +12,15 @@ export class FilterComponent {
 
   surveillanceTypes: Signal<Array<string>> = signal([]);
   amount: typeof this.filterService.amount = signal({displayed: 0, total: 0});
+  communes!: typeof this.filterService.communes
+  suggestedCommunes: WritableSignal<Array<string>> = signal([]);
+  displayedCommunes!: typeof this.filterService.displayedCommunes;
 
   constructor(private filterService: FilterService) {
     this.surveillanceTypes = filterService.surveillanceTypes;
     this.amount = filterService.amount
+    this.communes = filterService.communes;
+    this.displayedCommunes = filterService.displayedCommunes;
   }
 
   toggleTypeFilter(type: string) {
@@ -53,5 +58,34 @@ export class FilterComponent {
 
   toggleIgnoreWhenNoData() {
     this.filterService.ignoreWhenNoData.update((doIgnore) => !doIgnore)
+  }
+
+  communeInput(event: Event) {
+    const search = (event.target as HTMLInputElement).value
+    const arrayTop: Array<string> = [];
+    const arrayBottom: Array<string> = [];
+    if (search !== '') {
+  
+      this.communes().forEach((communeName) => {
+        if (communeName.toLowerCase().startsWith(search))
+          arrayTop.push(communeName);
+        else if (communeName.toLowerCase().includes(search))
+          arrayBottom.push(communeName);
+      });
+    }
+
+    this.suggestedCommunes.set([...arrayTop, ...arrayBottom]);
+  }
+
+  updateCommunes(name: string, operation: 'add' | 'remove') {
+    this.filterService.displayedCommunes.update((set) => {
+      const newSet = new Set(set);
+      if (operation === 'add')
+        newSet.add(name);
+      else
+        newSet.delete(name);
+
+      return newSet;
+    });
   }
 }

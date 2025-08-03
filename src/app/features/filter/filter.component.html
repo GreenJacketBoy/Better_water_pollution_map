@@ -36,3 +36,22 @@
 
 <p> Masquer les points dont la date d'un des résultats quantifiés est inférieure ou égale à :</p>
 <input type="date" id="lower" (input)="selectDateRange(null, $event)">
+
+
+<hr>
+
+<p> Filtrer par comunes :</p>
+
+@for (name of displayedCommunes(); track $index) {
+  <button (click)="updateCommunes(name, 'remove')"> {{ name }}</button>
+}
+
+<input type="text" id="commune" (input)="communeInput($event)">
+
+<div class="suggestions">
+  @for (name of suggestedCommunes(); track $index) {
+    <div class="commune" (click)="updateCommunes(name, 'add')">
+      <span> {{ name }}</span>
+    </div>
+  }
+</div>

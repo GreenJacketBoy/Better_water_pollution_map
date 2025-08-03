@@ -30,11 +30,15 @@ export class FilterService {
 
   private _surveillanceTypes: WritableSignal<Set<string>> = signal(new Set());
 
+  communes: WritableSignal<Set<string>> = signal(new Set());
+
   displayedIdInfosMap = signal(this.idInfosMap);
 
   surveillanceTypes = computed(() => {    
     return Array.from(this._surveillanceTypes()).sort();
   })
+
+  displayedCommunes: WritableSignal<Set<string>> = signal(new Set());
 
   displayedTypes: WritableSignal<Set<string>> = signal(new Set());
 
@@ -84,6 +88,8 @@ export class FilterService {
           return;
         if (!this.displayedTypes().has(value.type))
           return;
+        if (this.displayedCommunes().size !== 0 && !this.displayedCommunes().has(value.place))
+          return;
         if (value.measures.filter((data) => 
           (this.maxDate() === null || data[0].getTime() <= (this.maxDate() as Date).getTime())
           &&
@@ -109,6 +115,8 @@ export class FilterService {
       console.log('ding !');
 
       const features: any[] = json.features;
+
+      const newCommuneSet = new Set(this.communes());
       
       features.map((feature) => {
 
@@ -117,6 +125,8 @@ export class FilterService {
         
         this._surveillanceTypes.set(newSet);
         this.displayedTypes.set(newSet);
+        
+        newCommuneSet.add(feature.properties.commune);
         
         const analysis = (feature.properties.analyses_quantifiees as string);
 
@@ -151,6 +161,8 @@ export class FilterService {
 
         return feature;
       })
+
+      this.communes.set(newCommuneSet);
 
       const idInfosMapCopy = new Map();
       this.idInfosMap.forEach((value, key) => idInfosMapCopy.set(key, value));
