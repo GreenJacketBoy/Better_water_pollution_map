@@ -30,3 +30,9 @@
 <label for="lower"> µg/L</label>
 
 <hr>
+
+<p> Masquer les points dont la date d'un des résultats quantifiés est supérieure ou égale à :</p>
+<input type="date" id="upper" (input)="selectDateRange($event, null)">
+
+<p> Masquer les points dont la date d'un des résultats quantifiés est inférieure ou égale à :</p>
+<input type="date" id="lower" (input)="selectDateRange(null, $event)">

@@ -50,6 +50,9 @@ export class FilterService {
 
   ignoreWhenNoData = signal(false);
 
+  maxDate: WritableSignal<Date | null> = signal(null);
+  minDate: WritableSignal<Date | null> = signal(null);
+
   constructor(private mapService: MapService) {
 
     effect(() => {
@@ -67,11 +70,13 @@ export class FilterService {
 
     effect(() => { // filter update logic      
 
+      console.log('fonctionne ?');  
+      
       const newMap: typeof this.idInfosMap = new Map();
       this.upperLimit();
       this.lowerLimit();
 
-      console.log(this.displayedTypes());
+      this.displayedTypes();
       
 
       this.idInfosMap.forEach((value, key) => {
@@ -80,6 +85,10 @@ export class FilterService {
         if (!this.displayedTypes().has(value.type))
           return;
         if (value.measures.filter((data) => 
+          (this.maxDate() === null || data[0].getTime() <= (this.maxDate() as Date).getTime())
+          &&
+          (this.minDate() === null || data[0].getTime() >= (this.minDate() as Date).getTime())
+          &&
           (this.upperLimit() === -1 || data[2] <= this.upperLimit()) && (this.lowerLimit() === -1 || data[2] >= this.lowerLimit())
         ).length < value.measures.length)
           return;
@@ -88,9 +97,6 @@ export class FilterService {
       });
 
       this.displayedIdInfosMap.set(newMap);
-
-      console.log(newMap);
-      
     })
   }
 

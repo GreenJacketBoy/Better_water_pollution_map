@@ -40,6 +40,17 @@ export class FilterComponent {
     }
   }
 
+  selectDateRange(max: Event | null, min: Event | null) {
+    if (max !== null) {      
+      const value = (max.target as HTMLInputElement).value;
+      this.filterService.maxDate.set(value === '' ? null : new Date(value));
+    }
+    if (min !== null) {
+      const value = (min.target as HTMLInputElement).value;
+      this.filterService.minDate.set(value === '' ? null : new Date(value));
+    }
+  }
+
   toggleIgnoreWhenNoData() {
     this.filterService.ignoreWhenNoData.update((doIgnore) => !doIgnore)
   }
