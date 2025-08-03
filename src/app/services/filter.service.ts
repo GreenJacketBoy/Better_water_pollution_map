@@ -28,13 +28,27 @@ export class FilterService {
     }
   > = new Map();
 
-  private _survaillanceTypes: WritableSignal<Set<string>> = signal(new Set());
+  private _surveillanceTypes: WritableSignal<Set<string>> = signal(new Set());
 
   displayedIdInfosMap = signal(this.idInfosMap);
 
   surveillanceTypes = computed(() => {    
-    return Array.from(this._survaillanceTypes()).sort();
+    return Array.from(this._surveillanceTypes()).sort();
   })
+
+  displayedTypes: WritableSignal<Set<string>> = signal(new Set());
+
+  upperLimit: WritableSignal<number> = signal(-1);
+  lowerLimit: WritableSignal<number> = signal(-1);
+
+  amount = computed(() => {
+    return {
+      displayed: this.displayedIdInfosMap().size,
+      total: this.idInfosMap.size,
+    };
+  })
+
+  ignoreWhenNoData = signal(false);
 
   constructor(private mapService: MapService) {
 
@@ -50,29 +64,34 @@ export class FilterService {
     effect(() =>
       this.mapService.updateFromData(this.displayedIdInfosMap())
     );
-  }
 
-  toggleTypeFilter(type: string) {
+    effect(() => { // filter update logic      
 
-    const newMap: typeof this.idInfosMap = new Map();
-    let containsThisType = false;
+      const newMap: typeof this.idInfosMap = new Map();
+      this.upperLimit();
+      this.lowerLimit();
 
-    this.displayedIdInfosMap().forEach((value, key) => {
-      if (value.type === type)
-        containsThisType = true;
-      else
-        newMap.set(key, value);
-    });
+      console.log(this.displayedTypes());
+      
 
-    if (!containsThisType) {
       this.idInfosMap.forEach((value, key) => {
-        if (value.type === type)
-          newMap.set(key, value);
-      }
-      );
-    }
+        if (this.ignoreWhenNoData() && value.quantifiedAnalysisAmount === 0)
+          return;
+        if (!this.displayedTypes().has(value.type))
+          return;
+        if (value.measures.filter((data) => 
+          (this.upperLimit() === -1 || data[2] <= this.upperLimit()) && (this.lowerLimit() === -1 || data[2] >= this.lowerLimit())
+        ).length < value.measures.length)
+          return;
+        
+        newMap.set(key, value);
+      });
 
-    this.displayedIdInfosMap.set(newMap);
+      this.displayedIdInfosMap.set(newMap);
+
+      console.log(newMap);
+      
+    })
   }
 
   dataGatherAndDisplay(dataUrl: string) {
@@ -87,11 +106,11 @@ export class FilterService {
       
       features.map((feature) => {
 
-        this._survaillanceTypes.update((set) => {
-          const newSet = new Set(set);
-          newSet.add(feature.properties.type_surveillance);          
-          return newSet;
-        });        
+        const newSet = new Set(this._surveillanceTypes());
+        newSet.add(feature.properties.type_surveillance);          
+        
+        this._surveillanceTypes.set(newSet);
+        this.displayedTypes.set(newSet);
         
         const analysis = (feature.properties.analyses_quantifiees as string);
 

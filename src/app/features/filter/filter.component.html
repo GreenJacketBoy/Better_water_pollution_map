@@ -1,5 +1,12 @@
 <h3>Filtres :</h3>
 
+<p> {{ amount().displayed }} affichés sur {{ amount().total }} ({{ amount().displayed / amount().total * 100 }}%)</p>
+
+<input type="checkbox" id="ignoreWhenNoData" (change)="toggleIgnoreWhenNoData()">
+<label for="ignoreWhenNoData"> Masquer les points n'ayant pas d'analyse quantifiée</label>
+
+<hr>
+
 <p>Type : </p>
 <ul class="checkboxes">
   @for (type of this.surveillanceTypes(); track $index) {
@@ -9,3 +16,17 @@
     </li>
   }
 </ul>
+
+<hr>
+
+<p> Résultats :</p>
+
+<p> Masquer les points dont un des résultats quantifiés est supérieur ou égal à :</p>
+<input type="number" id="upper" (input)="selectRange($event, null)">
+<label for="upper"> µg/L</label>
+
+<p> Masquer les points dont un des résultats quantifiés est inférieur ou égal à :</p>
+<input type="number" id="lower" (input)="selectRange(null, $event)">
+<label for="lower"> µg/L</label>
+
+<hr>
