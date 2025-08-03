@@ -1,5 +1,5 @@
 import { computed, ElementRef, Injectable, signal } from "@angular/core";
-import { Feature, GeoJSONSource, Map as maplibreMap } from 'maplibre-gl';
+import { GeoJSONSource, Map as maplibreMap } from 'maplibre-gl';
 
 @Injectable({
   providedIn: 'root'
