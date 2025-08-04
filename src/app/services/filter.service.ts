@@ -57,8 +57,23 @@ export class FilterService {
   maxDate: WritableSignal<Date | null> = signal(null);
   minDate: WritableSignal<Date | null> = signal(null);
 
+  selectedPointId: WritableSignal<string | null> = signal(null);
+
   constructor(private mapService: MapService) {
 
+    if (mapService.selectedPointId() !== this.selectedPointId())
+      this.selectedPointId.set(mapService.selectedPointId());
+    mapService.selectedPointId = this.selectedPointId;
+
+    effect(() => {
+      if (this.selectedPointId() === null)
+        mapService.selectAtCoordinates(null);
+      else {
+        const coordinates = this.idInfosMap.get(this.selectedPointId() as string)?.coordinates;        
+        mapService.selectAtCoordinates(coordinates ? coordinates : null);
+      }
+    })
+    
     effect(() => {
       if (mapService.mapIsReady())
         return;
@@ -73,8 +88,6 @@ export class FilterService {
     );
 
     effect(() => { // filter update logic      
-
-      console.log('fonctionne ?');  
       
       const newMap: typeof this.idInfosMap = new Map();
       this.upperLimit();

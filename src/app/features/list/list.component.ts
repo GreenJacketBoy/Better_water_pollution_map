@@ -13,8 +13,10 @@ export class ListComponent {
   displayedIdInfosMap!: Signal<Array<{id: string, data: {type: string, measures: Array<[Date, string, number]>, startDate: Date, endDate: Date, coordinates: [number, number], analysisAmount: number, quantifiedAnalysisAmount: number, amountPfasSearches: number, place: string,}}>>;
   totalPages!: Signal<number>;
   pageIndex = signal(0);
+  selectedPointId!: typeof this.filterService.selectedPointId;
 
   constructor(private filterService: FilterService) {
+    this.selectedPointId = filterService.selectedPointId;
     this.displayedIdInfosMap = computed(() => {
       const array: any = [];
       let index = 0;
@@ -48,5 +50,9 @@ export class ListComponent {
     let addition = 0;
     data.forEach((value) => addition += value[2]);
     return addition / data.length + ' µg/L';
+  }
+
+  selectPoint(id: string) {
+    this.selectedPointId.set(id);
   }
 }

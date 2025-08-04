@@ -1,5 +1,5 @@
-import { computed, ElementRef, Injectable, signal } from "@angular/core";
-import { GeoJSONSource, Map as maplibreMap } from 'maplibre-gl';
+import { computed, effect, ElementRef, Injectable, signal, WritableSignal } from "@angular/core";
+import { GeoJSONSource, Map as maplibreMap, Marker } from 'maplibre-gl';
 
 @Injectable({
   providedIn: 'root'
@@ -7,11 +7,27 @@ import { GeoJSONSource, Map as maplibreMap } from 'maplibre-gl';
 export class MapService {
 
   private _mapIsReady = signal(false);
-
+  private markerElement = document.createElement('div');
+  private selectedPointMarker = new Marker({element: this.markerElement})
+  
   mapIsReady = computed(() => this._mapIsReady());
   map!: maplibreMap;
+  selectedPointId: WritableSignal<string | null> = signal(null);
 
   constructor() {
+    this.markerElement.style.border = '3px solid red';
+    this.markerElement.style.padding = '7px';
+    this.markerElement.style.borderRadius = '3px';
+  }
+
+  selectAtCoordinates(lngLat: null | [number, number]) {
+    if (lngLat === null)
+      this.selectedPointMarker.remove();
+    else if (this.map) {
+      this.selectedPointMarker
+      .setLngLat(lngLat)
+      .addTo(this.map);
+    }
   }
 
   initializeMap(mapContainer: ElementRef<HTMLElement>) {
@@ -101,6 +117,13 @@ export class MapService {
         },
       });
 
+      this.map.on('click', 'points-layer', (event) => {
+        if (!event.features || event.features.length === 0)
+          return;
+
+        this.selectedPointId.set(event.features[0].properties['id']);
+      });
+
       this._mapIsReady.set(true);
     })
   }
@@ -136,6 +159,7 @@ export class MapService {
         properties: {
           // Maplibre doesn't have a 'contains' operator for string in its paint style expressions, so changing it here
           "type_surveillance": type.includes('Surveillance industrielle', 0) ? 'industrielle' : type,
+          "id": pointId,
         },
         geometry: {
           type: 'Point',

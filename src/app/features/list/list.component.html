@@ -1,6 +1,6 @@
 <div class="point-list">
   @for (point of displayedIdInfosMap(); track $index) {
-    <div class="point">
+    <div class="point" [class.selected]="point.id === selectedPointId()" (click)="selectPoint(point.id)">
       <h4> Id : {{ point.id }}</h4>
       <ul>
         <li> Type : {{ point.data.type }}</li>
