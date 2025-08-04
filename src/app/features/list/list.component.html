@@ -1,0 +1,20 @@
+<div class="point-list">
+  @for (point of displayedIdInfosMap(); track $index) {
+    <div class="point">
+      <h4> Id : {{ point.id }}</h4>
+      <ul>
+        <li> Type : {{ point.data.type }}</li>
+        <li> Commune : {{ point.data.place }}</li>
+        <li> Nb analyses : {{ point.data.analysisAmount }}</li>
+        <li> Nb analyses quantifiées  : {{ point.data.quantifiedAnalysisAmount }}</li>
+        <li> Moyenne analyses (peu représentative) : {{ getAnalysisAverage(point.data.measures) }}</li>
+      </ul>
+    </div>
+  }
+</div>
+
+<div class="page-selection">
+  <button (click)="pageIndexAdd(-1)">Précedent</button>
+  <p> {{ pageIndex() + 1 }} / {{ totalPages() }}</p>
+  <button (click)="pageIndexAdd(+1)">Suivant</button>
+</div>
