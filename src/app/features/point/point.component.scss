@@ -1,0 +1,16 @@
+:host {
+  max-height: 60%;
+  overflow: scroll;
+
+  .selected {
+    border-color: red;
+    border-radius: 5px;
+  }
+
+  .good {
+    color: red;
+  }
+  .bad {
+    color: green;
+  }
+}

@@ -13,7 +13,7 @@ export class FilterService {
     'https://mapsref.brgm.fr/wxs/pfas/pfas?&service=WFS&request=GetFeature&version=2.0.0&typename=POINTS_OSOUT&outputFormat=application/json',
   ];
   
-  private idInfosMap: Map<
+  idInfosMap: Map<
     string,
     {
       type: string,

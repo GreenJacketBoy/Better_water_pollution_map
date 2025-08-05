@@ -1,0 +1,72 @@
+@if (selectedPointId()) {
+
+  <div>
+    <h4> Point séléctionné : <a href="https://www.georisques.gouv.fr/risques/installations/donnees/details/{{ selectedPointId() }}"> {{ selectedPointId() }}</a></h4>
+    <button (click)="unselect()"> Dé-séléctionner le point</button>
+  </div>
+
+  <ul>
+    <li> Commune : {{ pointInfo()?.place }}</li>
+    <li> Type de surveillance : {{ pointInfo()?.type }}</li>
+    <li> Mesures : 
+      <p> 
+        Trier par : 
+        critère : 
+        <button (click)="sortBy(null, 0)" [class.selected]="criteriaIndex() === 0">Date</button>
+        <button (click)="sortBy(null, 1)" [class.selected]="criteriaIndex() === 1">Nom</button>
+        <button (click)="sortBy(null, 2)" [class.selected]="criteriaIndex() === 2">Mesure</button>
+        ordre : 
+        <button (click)="sortBy('asc', null)" [class.selected]="order() === 'asc'">croissant</button>
+        <button (click)="sortBy('desc', null)" [class.selected]="order() === 'desc'">décroissant</button>
+      </p>
+      <ul>
+        <li>
+          Mesures quantifiées ({{ pointInfo()?.measures?.length }}) : 
+          
+          <table>
+            <tr>
+              <th> Date :</th>
+              <th> Nom :</th>
+              <th> Mesure :</th>
+            </tr>
+            @for (measure of pointInfo()?.measures?.sort(sortFunction()); track $index) {
+              <tr>
+                <td> {{ `${measure[0].getDate()}/${measure[0].getMonth()}/${measure[0].getFullYear()}` }}</td>
+                <td> {{ measure[1] }} :</td>
+                <td> {{ measure[2]}} µg/L</td>
+              </tr>
+            }
+          </table>
+        </li>
+        <li>
+          Toutes les mesures ({{ pointInfo()?.analysisAmount }}) :
+          
+          @if (allMeasures() === null) {
+            <p> <button (click)="requestAllMeasures()"> Afficher</button></p>
+          }
+          @else if (allMeasures() === 'loading') {
+            <p> <b> Chargement...</b></p>
+          }
+          @else {
+            <table>
+              <tr>
+                <th> Date :</th>
+                <th> Nom :</th>
+                <th> Mesure :</th>
+                <th> État :</th>
+              </tr>
+              @for (measure of allMeasuresNotNull().sort(sortFunction()); track $index) {
+                <tr>
+                  <td> {{ `${measure[0].getDate()}/${measure[0].getMonth()}/${measure[0].getFullYear()}` }}</td>
+                  <td> {{ measure[1] }} :</td>
+                  <td> {{ measure[4] }}{{ measure[2]}} µg/L</td>
+                  <td class="{{measure[3] === 'Correcte' ? 'bad' : 'good'}}"> {{ measure[3] }}</td>
+                </tr>
+              }
+            </table>
+          }
+        </li>
+      </ul>
+    </li>
+  </ul>
+}
