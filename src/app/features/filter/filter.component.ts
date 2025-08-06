@@ -1,4 +1,4 @@
-import { Component, signal, Signal, WritableSignal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, signal, Signal, ViewChild, WritableSignal } from '@angular/core';
 import { FilterService } from '../../services/filter.service';
 
 @Component({
@@ -8,19 +8,30 @@ import { FilterService } from '../../services/filter.service';
   styleUrl: './filter.component.scss'
 })
 
-export class FilterComponent {
+export class FilterComponent implements AfterViewInit {
 
   surveillanceTypes: Signal<Array<string>> = signal([]);
   amount: typeof this.filterService.amount = signal({displayed: 0, total: 0});
   communes!: typeof this.filterService.communes
   suggestedCommunes: WritableSignal<Array<string>> = signal([]);
   displayedCommunes!: typeof this.filterService.displayedCommunes;
+  suggestionsAreDisplayed = signal(false);
+  @ViewChild('commune')
+  private communeInputElement!: ElementRef<HTMLInputElement>;
 
   constructor(private filterService: FilterService) {
     this.surveillanceTypes = filterService.surveillanceTypes;
     this.amount = filterService.amount
     this.communes = filterService.communes;
     this.displayedCommunes = filterService.displayedCommunes;
+  }
+
+  ngAfterViewInit() {
+    this.communeInputElement?.nativeElement.addEventListener('focusin', () => this.suggestionsAreDisplayed.set(true));
+    this.communeInputElement?.nativeElement.addEventListener('focusout', () => {
+      // so there is time before it disapears
+      setTimeout(() => this.suggestionsAreDisplayed.set(false), 100);
+    });    
   }
 
   toggleTypeFilter(type: string) {

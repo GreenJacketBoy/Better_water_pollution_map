@@ -46,12 +46,16 @@
   <button (click)="updateCommunes(name, 'remove')"> {{ name }}</button>
 }
 
-<input type="text" id="commune" (input)="communeInput($event)">
+<br>
+<input type="text" id="commune" (input)="communeInput($event)" #commune>
 
-<div class="suggestions">
-  @for (name of suggestedCommunes(); track $index) {
-    <div class="commune" (click)="updateCommunes(name, 'add')">
-      <span> {{ name }}</span>
-    </div>
-  }
-</div>
+@if (suggestionsAreDisplayed()) {
+
+  <div class="suggestions">
+    @for (name of suggestedCommunes(); track $index) {
+      <div class="commune" (click)="updateCommunes(name, 'add')">
+        <span> {{ name }}</span>
+      </div>
+    }
+  </div>
+}
