@@ -1,4 +1,4 @@
-import { Component, computed, effect, signal, WritableSignal } from '@angular/core';
+import { Component, computed, signal, WritableSignal } from '@angular/core';
 import { FilterService } from '../../services/filter.service';
 
 @Component({
@@ -24,18 +24,14 @@ export class PointComponent {
     ],
   }
   selectedPointId!: typeof this.filterService.selectedPointId;
+  selectedPointIdNotNull = computed(() => this.selectedPointId() as string);
   pointInfo = computed(() => {
     return this.idInfosMap.get(this.selectedPointId() as string);
   });
   order: WritableSignal<'asc' | 'desc'> = signal('desc');
   criteriaIndex: WritableSignal<0 | 1 | 2> = signal(0);
 
-  allMeasures: WritableSignal<Array<[Date, string, number, string, string]> | 'loading' | null> = signal(null);
-  allMeasuresNotNull = computed(() => {
-    if (this.allMeasures() === null || this.allMeasures() === 'loading')
-      return []
-    return this.allMeasures() as Array<[Date, string, number, string, string]>;
-  }); 
+  allMeasuresSet: WritableSignal<Map<string, Array<[Date, string, number, string, string]> | null>> = signal(new Map());
 
   sortFunction = computed(() =>{
     this.criteriaIndex();
@@ -48,11 +44,6 @@ export class PointComponent {
   constructor(private filterService: FilterService) {
     this.idInfosMap = filterService.idInfosMap;
     this.selectedPointId = filterService.selectedPointId;
-
-    effect(() => {
-      this.selectedPointId();
-      this.allMeasures.set(null);
-    })
   }
 
   sortBy(order: 'asc' | 'desc' | null, criteriaIndex: 0 | 1 | 2 | null) {
@@ -62,10 +53,11 @@ export class PointComponent {
       this.criteriaIndex.set(criteriaIndex);
   }
 
-  requestAllMeasures() {
-    if (this.allMeasures() !== null)
+  requestAllMeasures(pointId: string) {
+    if (this.allMeasuresSet().has(pointId))
       return;
-    this.allMeasures.set('loading');
+
+    this.allMeasuresSet.update((map) => new Map(map.set(pointId, null)));
 
     fetch(`https://mapsref.brgm.fr/wxs/pfas/pfas?&service=wfs&version=2.0.0&request=getfeature&typename=ANALYSES&outputformat=application/json; subtype=geojson; charset=utf-8&point=${this.selectedPointId()}`)
     .then((response) => response.json())
@@ -78,11 +70,11 @@ export class PointComponent {
         
         const [day, month, year] = props['date_prelevement'].split('\/');
         const [sign, measure] = props['resultat_analyse'].includes('<') ? ['< ', +props['resultat_analyse'].replace('<', '')] : ['', props['resultat_analyse']];
-        
+
         return [new Date(+year, +month, +day), props['parametre'], measure, props['qualification_mesure'], sign];
       });      
       
-      this.allMeasures.set(prettyArray);
+      this.allMeasuresSet.update((map) => new Map(map.set(pointId, prettyArray)));
     })
   }
 

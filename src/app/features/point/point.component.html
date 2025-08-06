@@ -40,11 +40,13 @@
         </li>
         <li>
           Toutes les mesures ({{ pointInfo()?.analysisAmount }}) :
+
+          @let measuresOfPoint = allMeasuresSet().get(selectedPointIdNotNull());
           
-          @if (allMeasures() === null) {
-            <p> <button (click)="requestAllMeasures()"> Afficher</button></p>
+          @if (measuresOfPoint === undefined) {
+            <p> <button (click)="requestAllMeasures(selectedPointIdNotNull())"> Afficher</button></p>
           }
-          @else if (allMeasures() === 'loading') {
+          @else if (measuresOfPoint === null) {
             <p> <b> Chargement...</b></p>
           }
           @else {
@@ -55,7 +57,7 @@
                 <th> Mesure :</th>
                 <th> État :</th>
               </tr>
-              @for (measure of allMeasuresNotNull().sort(sortFunction()); track $index) {
+              @for (measure of measuresOfPoint.sort(sortFunction()); track $index) {
                 <tr>
                   <td> {{ `${measure[0].getDate()}/${measure[0].getMonth()}/${measure[0].getFullYear()}` }}</td>
                   <td> {{ measure[1] }} :</td>
