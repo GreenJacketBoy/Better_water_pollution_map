@@ -67,19 +67,19 @@ export class PointComponent {
       return;
     this.allMeasures.set('loading');
 
-    fetch(`https://mapsref.brgm.fr/wxs/pfas/pfas?&service=wfs&version=2.0.0&request=getfeature&typename=ANALYSES&outputformat=csv&point=${this.selectedPointId()}`)
-    .then((response) => response.text())
-    .then((csv) => {
-      const prettyArray: Array<[Date, string, number, string, string]> = csv
-      .split('\n')
-      .filter((line) => line !== '' && !line.includes('type_surveillance', 0))
-      .map((line) => {        
-        const lineAsArray = line.split(',');
-        console.log(lineAsArray);
+    fetch(`https://mapsref.brgm.fr/wxs/pfas/pfas?&service=wfs&version=2.0.0&request=getfeature&typename=ANALYSES&outputformat=application/json; subtype=geojson; charset=utf-8&point=${this.selectedPointId()}`)
+    .then((response) => response.json())
+    .then((json) => {
+      const prettyArray: Array<[Date, string, number, string, string]> = (json.features as Array<GeoJSON.Feature>)
+      .map((feature) => {        
+        const props = feature.properties;
+        if (!props)
+          return [new Date, '', 0, '', '']
         
-        const [day, month, year] = lineAsArray[3].split('/');
-        const [sign, measure] = lineAsArray[5].includes('<') ? ['< ', +lineAsArray[5].replace('<', '')] : ['', +lineAsArray[5]];
-        return [new Date(+year, +month, +day), lineAsArray[4], measure, lineAsArray[7], sign];
+        const [day, month, year] = props['date_prelevement'].split('\/');
+        const [sign, measure] = props['resultat_analyse'].includes('<') ? ['< ', +props['resultat_analyse'].replace('<', '')] : ['', props['resultat_analyse']];
+        
+        return [new Date(+year, +month, +day), props['parametre'], measure, props['qualification_mesure'], sign];
       });      
       
       this.allMeasures.set(prettyArray);
