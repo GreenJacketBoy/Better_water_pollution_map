@@ -10,14 +10,17 @@
     <li> Type de surveillance : {{ pointInfo()?.type }}</li>
     <li> Mesures : 
       <p> 
-        Trier par : 
-        critère : 
-        <button (click)="sortBy(null, 0)" [class.selected]="criteriaIndex() === 0">Date</button>
-        <button (click)="sortBy(null, 1)" [class.selected]="criteriaIndex() === 1">Nom</button>
-        <button (click)="sortBy(null, 2)" [class.selected]="criteriaIndex() === 2">Mesure</button>
-        ordre : 
-        <button (click)="sortBy('asc', null)" [class.selected]="order() === 'asc'">croissant</button>
-        <button (click)="sortBy('desc', null)" [class.selected]="order() === 'desc'">décroissant</button>
+        <span> Trier par (cliquez) :</span>
+        <br>
+        <span>
+          critère : 
+          <button class="order-button" (click)="sortBy(null, 0)" [class.selected]="criteriaIndex() === 0"> DATE</button>
+          <button class="order-button" (click)="sortBy(null, 1)" [class.selected]="criteriaIndex() === 1"> NOM</button>
+          <button class="order-button" (click)="sortBy(null, 2)" [class.selected]="criteriaIndex() === 2"> MESURE</button>
+          ordre : 
+          <button class="order-button" (click)="sortBy('asc', null)" [class.selected]="order() === 'asc'"> CROISSANT</button>
+          <button class="order-button" (click)="sortBy('desc', null)" [class.selected]="order() === 'desc'"> DÉCROISSANT</button>
+        </span> 
       </p>
       <ul>
         <li>

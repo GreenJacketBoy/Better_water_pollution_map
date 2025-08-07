@@ -2,17 +2,20 @@
 
 <p> {{ amount().displayed }} affichés sur {{ amount().total }} ({{ amount().displayed / amount().total * 100 }}%)</p>
 
-<input type="checkbox" id="ignoreWhenNoData" (change)="toggleIgnoreWhenNoData()">
-<label for="ignoreWhenNoData"> Masquer les points n'ayant pas d'analyse quantifiée</label>
+<div class="custom-checkbox" (click)="toggleIgnoreWhenNoData()">
+  <img [src]="`checkbox${ignoreWhenNoData() ? '_lit' : '_unlit'}.svg`" alt="Checkbox" height="20px" width="20px"> 
+  <span> Masquer les points n'ayant pas d'analyse quantifiée</span>
+</div>
 
 <hr>
 
-<p>Type : </p>
+<p>Type (cliquez) : </p>
 <ul class="checkboxes">
   @for (type of this.surveillanceTypes(); track $index) {
     <li> 
-      <input type="checkbox" id="{{ type }}" (change)="toggleTypeFilter(type)" checked>
-      <label for="{{ type }}"> {{ type }}</label>
+      <div class="custom-checkbox" (click)="toggleTypeFilter(type)">
+        <img [src]="`checkbox${displayedTypes().has(type) ? '_lit' : '_unlit'}.svg`" alt="Checkbox" height="20px" width="20px"> {{ type }}
+      </div>
     </li>
   }
 </ul>

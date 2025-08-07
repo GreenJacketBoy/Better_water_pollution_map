@@ -1,3 +1,6 @@
+<h3> Points affichés :</h3>
+<span> (cliquez pour selectionner)</span>
+
 <div class="point-list">
   @for (point of displayedIdInfosMap(); track $index) {
     <div class="point" [class.selected]="point.id === selectedPointId()" (click)="selectPoint(point.id)">

@@ -1,5 +1,4 @@
 :host {
-  min-width: max-content;
 
   .hidden {
     display: none;
@@ -14,5 +13,18 @@
     min-width: 100%;
     border: 1px solid black;
     padding: 2px
+  }
+
+
+  .custom-checkbox {
+    display: flex;
+    flex-direction: row;
+    cursor: default;
+
+    .img {
+      max-height: 1px;
+      max-width: auto;
+      vertical-align: middle;
+    }
   }
 }

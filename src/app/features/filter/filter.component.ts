@@ -11,6 +11,8 @@ import { FilterService } from '../../services/filter.service';
 export class FilterComponent implements AfterViewInit {
 
   surveillanceTypes: Signal<Array<string>> = signal([]);
+  displayedTypes!: Signal<Set<string>>;
+  ignoreWhenNoData!: Signal<boolean>;
   amount: typeof this.filterService.amount = signal({displayed: 0, total: 0});
   communes!: typeof this.filterService.communes
   suggestedCommunes: WritableSignal<Array<string>> = signal([]);
@@ -24,6 +26,8 @@ export class FilterComponent implements AfterViewInit {
     this.amount = filterService.amount
     this.communes = filterService.communes;
     this.displayedCommunes = filterService.displayedCommunes;
+    this.displayedTypes = filterService.displayedTypes;
+    this.ignoreWhenNoData = filterService.ignoreWhenNoData;
   }
 
   ngAfterViewInit() {

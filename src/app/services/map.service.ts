@@ -33,7 +33,7 @@ export class MapService {
   initializeMap(mapContainer: ElementRef<HTMLElement>) {
     this.map = new maplibreMap({
       container: mapContainer.nativeElement,
-      style: 'https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json',
+      style: 'https://openmaptiles.geo.data.gouv.fr/styles/dark-matter/style.json',
       center: [0, 0],
       zoom: 0,
     });
@@ -124,6 +124,11 @@ export class MapService {
         this.selectedPointId.set(event.features[0].properties['id']);
       });
 
+      // Load an image to use as the pattern
+        this.map.loadImage('fallout-terminal.webp')
+        .then((image) => this.map.addImage('fallout-terminal', image.data));
+
+      this.updateStyle();
       this._mapIsReady.set(true);
     })
   }
@@ -175,5 +180,21 @@ export class MapService {
       add: features,
       removeAll: true,
     }); 
+  }
+
+  private updateStyle() {
+    const newStyle = this.map.getStyle();
+
+    newStyle.layers = newStyle.layers
+    .map((layer) => {
+      if (layer.id === 'background') // changes the color of the land 
+        layer.paint = { "background-pattern": "fallout-terminal" };
+      else if (layer.id.includes('name') || layer.id.includes('place')) // changes all text color
+        layer.paint = Object.assign(layer.paint || {}, { "text-color": "rgb(221, 255, 212)", "text-halo-color": "rgb(11, 90, 0)" });
+
+      return layer;
+    });
+
+    this.map.setStyle(newStyle);
   }
 }

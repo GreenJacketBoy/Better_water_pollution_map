@@ -2,15 +2,23 @@
   max-height: 60%;
   overflow: scroll;
 
-  .selected {
-    border-color: red;
+  .order-button {
+    border: 2px solid #8f8f8f;
     border-radius: 5px;
+    font-weight: bold;
+    background-color: #1e5600;
+    color: #80ce56;
+  }
+
+  .order-button.selected {
+    background-color: #45cd00;
+    color: #e9ffde;
   }
 
   .good {
-    color: red;
+    background-color: red;
   }
   .bad {
-    color: green;
+    background-color: green;
   }
 }

@@ -1,7 +1,6 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: 100vh;
 
   .page-selection {
     display: flex;
@@ -23,12 +22,13 @@
 
     .point {
       margin: 0.5em;
-      border: 1px solid black;
+      padding: 0.25em;
+      border: 2px outset rgb(73, 73, 73);
       border-radius: 15px;
     }
 
-    .selected {
-      border-color: red;
+    .point.selected {
+      border-color: #45cd00;
     }
   }
 }

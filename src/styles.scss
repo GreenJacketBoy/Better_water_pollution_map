@@ -1,3 +1,24 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'maplibre-gl/dist/maplibre-gl.css';
+
+body {
+  margin: 0;
+  font-family: 'Monospace';
+
+  // input[type="checkbox"] {
+  //   background-image: url('assets/images/checkbox_lit.svg');
+  // }
+
+  input[type=checkbox]:before {
+    content:"";
+    display:inline-block;
+    width:12px;
+    height:12px;
+    background:red;
+  }
+  
+  input[type=checkbox]:checked:before {
+    background:green;
+  }
+}
